@@ -14,7 +14,7 @@ html {
 
 @media (max-width: 1000px) {
     html { 
-        font-size: 32px;
+        font-size: 24px;
     }  
 }
 
@@ -23,13 +23,17 @@ body {
     background-color: var(--background-color);
     color: var(--text-color);
     text-align: center;
+    margin: 0;
 }
 
 h1 {
     font-weight: 700;
-    font-size: 2rem;
+    font-size: 1.5rem;
     line-height: 2.5rem;
-    margin: 3rem auto;
+    margin: 0 auto 1rem;
+    padding: 0.5rem auto;
+    color: var(--background-color);
+    background-color: var(--text-color);
 }
 
 #date-selector {
@@ -37,7 +41,7 @@ h1 {
 }
 
 main {
-    max-width: min(800px, 95vw);
+    max-width: min(800px, 80vw);
     margin: auto;
     display: grid; 
     grid-template-columns: 1fr 1fr; 
@@ -54,7 +58,7 @@ main {
 .highlighted-number {
     font-style: normal;
     font-weight: 800;
-    font-size: 7em;
+    font-size: 7rem;
     line-height: 7.5rem;
     text-align: right;
 
@@ -83,6 +87,11 @@ main {
     margin-bottom: 1rem;
 }
 
-form input {
+#selection-date-form {
+    margin: 1rem auto;
+}
+
+#selection-date-form input,
+#selection-date-form label {
     font-size: 1rem;
 }
