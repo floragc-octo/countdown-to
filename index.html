@@ -5,7 +5,7 @@
     <link href="style.css" rel="stylesheet" />
   </head>
   <body>
-    <form id="date-selector">
+    <form id="selection-date-form">
         <label for="selection-date">Countdown to: </label>
         <input type="datetime-local" id="selection-date" required>
         <input type="submit" value="launch">
@@ -27,5 +27,23 @@
     </main>
   </body>
 
+  <script src="config.js"></script>
+  <script src="view.js"></script>
   <script src="script.js"></script>
+  <script>
+    let params = new URLSearchParams(document.location.search);
+    let date = params.get(SEARCH_PARAM_DATE);
+    if (date) {
+      initTimer(new Date(date));
+    }
+    getSelection(SELECTOR_DATE_FORM).onsubmit = (event) => {
+      event.preventDefault();
+    
+      const selectedDate = getSelectionValue(SELECTOR_DATE_INPUT);
+
+      const url = new URL(window.location.href);
+      url.searchParams.set(SEARCH_PARAM_DATE, selectedDate);
+      window.location.replace(url.toString());
+    };
+  </script>
 </html>

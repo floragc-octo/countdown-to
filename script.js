@@ -1,59 +1,10 @@
-const options = {
-  weekday: "long",
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-};
-const locale = navigator.language;
-
-const SEARCH_PARAM_DATE = "date";
-
-const HOUR_LIMITER = "h";
-
-const SELECTOR_DAY = "timer-day";
-const SELECTOR_HOUR = "timer-hour";
-const SELECTOR_MINUTE = "timer-minute";
-const SELECTOR_SECOND = "timer-second";
-const SELECTOR_DATE = "date";
-const SELECTOR_ERROR_MESSAGE = "error-message";
-
-const MILLI = 1000;
-const SECOND = 60;
-const MINUTE = 60;
-const HOURS = 24;
-
-// Display methods
-
-const updatePageTitleWithDate = (date) => {
-  document.title = date;
-};
-
-const updateSelectedDateMessage = (dateToDisplay, timeToDisplay) => {
-  document.querySelector(
-    `#${SELECTOR_DATE}`
-  ).innerText = `${dateToDisplay} ${timeToDisplay}`;
-};
-
-
-const getTimeWithLeadingZero = (time) => String(time).padStart(2, "0");
-
-const updateInterval = (interval, selector) => {
-  document.querySelector(`#${selector}`).innerText = getTimeWithLeadingZero(interval);
-};
-
-const displayError = (errorMessage) => {
-  document.querySelector(`#${SELECTOR_DATE}`).innerText = "?";
-  document.querySelector(`#${SELECTOR_ERROR_MESSAGE}`).innerText = errorMessage;
-  document.querySelector(`#${SELECTOR_ERROR_MESSAGE}`).className = "error";
-};
-
 // Calculations
 
-const getInterval = (interval) => ({
-  days: Math.floor(interval / (MILLI * SECOND * MINUTE * HOURS)),
-  hours: Math.floor((interval % (MILLI * SECOND * MINUTE * HOURS)) / (MILLI * SECOND * MINUTE)),
-  minutes: Math.floor((interval % (MILLI * SECOND * MINUTE)) / (MILLI * SECOND)),
-  seconds: Math.floor((interval % (MILLI * SECOND)) / MILLI),
+const getDateInterval = (interval) => ({
+  days: Math.floor(interval / HOURS_IN_MILLI_SECONDS),
+  hours: Math.floor((interval % HOURS_IN_MILLI_SECONDS) / MINUTES_IN_MILLI_SECONDS),
+  minutes: Math.floor((interval % MINUTES_IN_MILLI_SECONDS) / MILLI_SECONDS),
+  seconds: Math.floor((interval % MILLI_SECONDS) / MILLI),
 });
 
 const isValidDate = (date) => date instanceof Date && !isNaN(date);
@@ -62,43 +13,41 @@ const calculateInterval = (dateFrom, dateTo) => dateTo - dateFrom;
 
 // Timer
 
-  function timer(selectedDate) {
-    const currentDate = new Date();
-    const interval = calculateInterval(currentDate, selectedDate);
+function timer(selectedDate) {
+  const currentDate = new Date();
+  const interval = calculateInterval(currentDate, selectedDate);
 
-    if (interval < 0) {
-      displayError("This date is in the past");
-    }
-    const { days, hours, minutes, seconds } = getInterval(interval);
-    updateInterval(days, SELECTOR_DAY);
-    updateInterval(hours, SELECTOR_HOUR);
-    updateInterval(minutes, SELECTOR_MINUTE);
-    updateInterval(seconds, SELECTOR_SECOND);
+  if (interval < 0) {
+    displayError(MESSAGE_ERROR_PAST_DATE);
   }
+  const { days, hours, minutes, seconds } = getDateInterval(interval);
+  displayUpdatedInterval(days, SELECTOR_DAY);
+  displayUpdatedInterval(hours, SELECTOR_HOUR);
+  displayUpdatedInterval(minutes, SELECTOR_MINUTE);
+  displayUpdatedInterval(seconds, SELECTOR_SECOND);
+}
+
+let sessionTimer;
 
 const initTimer = (selectedDate) => {
-
   // YYYY-MM-DDTHH:mm:ss.sssZ
   // 2022-06-14T12:34:12.789Z
-  const selectionAsDate = new Date(selectedDate);
+  window.clearInterval(sessionTimer);
+  sessionTimer = null;
 
-  if (!isValidDate(selectionAsDate)) {
-    displayError("This date doesn't seem valid");
-    return
-  } 
-    const dateToDisplay = selectionAsDate.toLocaleDateString(locale, options);
-    const timeToDisplay = getTimeWithLeadingZero(selectionAsDate.getUTCHours()) + HOUR_LIMITER + getTimeWithLeadingZero(selectionAsDate.getUTCMinutes());
+  if (!isValidDate(selectedDate)) {
+    displayError(MESSAGE_ERROR_INVALID_DATE);
+    return;
+  }
+  const dateToDisplay = selectedDate.toLocaleDateString(locale, options);
+  const timeToDisplay =
+    timeWithLeadingZero(selectedDate.getHours()) +
+    HOUR_LIMITER +
+    timeWithLeadingZero(selectedDate.getMinutes());
 
-    updatePageTitleWithDate(dateToDisplay);
-    updateSelectedDateMessage(dateToDisplay, timeToDisplay);
+  updatePageTitleWithDate(dateToDisplay);
+  updateSelectedDateMessage(dateToDisplay, timeToDisplay);
+  updateDefaultInputValue(formatDateToInputDatetime(selectedDate));
 
-    return timerInterval = window.setInterval(timer, 1000, selectedDate);
-};
-
-// INIT
-
-document.querySelector("#date-selector").onsubmit = (event) => {
-  event.preventDefault();
-  const value = document.getElementById("selection-date").value;
-  const timer = initTimer(new Date(value));
+  sessionTimer = window.setInterval(timer, 1000, selectedDate);
 };
